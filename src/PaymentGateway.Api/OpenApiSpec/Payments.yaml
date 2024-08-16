@@ -1,0 +1,85 @@
+openapi: 3.0.3
+info:
+  title: Payment API
+  description: API for processing payment transactions
+  version: 1.0.0
+paths:
+  /payment:
+    post:
+      summary: Process a payment
+      operationId: processPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: Payment processed successfully
+        '400':
+          description: Invalid request
+components:
+  schemas:
+    PaymentRequest:
+      type: object
+      required:
+        - cardNumber
+        - expiryMonth
+        - expiryYear
+        - currency
+        - amount
+        - cvv
+      properties:
+        cardNumber:
+          type: string
+          description: >
+            The credit card number, consisting of 14 to 19 numeric characters. 
+            No spaces or non-numeric characters are allowed.
+          minLength: 14
+          maxLength: 19
+          pattern: '^[0-9]+$'
+          example: "4111111111111111"
+        expiryMonth:
+          type: integer
+          description: >
+            The expiration month of the credit card, expressed as a value between 1 and 12.
+            Must be a valid month.
+          minimum: 1
+          maximum: 12
+          example: 12
+        expiryYear:
+          type: integer
+          description: >
+            The expiration year of the credit card. 
+            The year must be in the future and should validate in conjunction with the expiry month to ensure the card is not expired.
+          minimum: 2024  # Adjust dynamically to ensure this value is always set to the current year or later
+          example: 2025
+        currency:
+          type: string
+          description: >
+            The currency code, following ISO 4217 format. 
+            Only specific currencies are allowed (e.g., USD, EUR, GBP), and the code must be exactly 3 characters long.
+          enum:
+            - USD  # United States Dollar
+            - EUR  # Euro
+            - GBP  # British Pound Sterling
+          minLength: 3
+          maxLength: 3
+          example: "USD"
+        amount:
+          type: integer
+          description: >
+            The payment amount in the minor unit of the specified currency.
+            For example, 1050 in USD represents $10.50.
+            Ensure that the value is appropriate for the minor currency unit of the specified currency.
+          example: 1050
+        cvv:
+          type: string
+          description: >
+            The Card Verification Value (CVV), a security feature for card-not-present transactions.
+            It must consist of 3 to 4 numeric characters, depending on the card type.
+          minLength: 3
+          maxLength: 4
+          pattern: '^[0-9]{3,4}$'
+          example: "123"
