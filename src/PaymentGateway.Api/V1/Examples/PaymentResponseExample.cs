@@ -4,13 +4,13 @@ using Swashbuckle.AspNetCore.Filters;
 
 namespace PaymentGateway.Api.V1.Examples
 {
-    public class PaymentResponseExample : IExamplesProvider<PaymentResponse>
+    public class PaymentResponseExample : IExamplesProvider<PaymentCreatedResponse>
     {
-        public PaymentResponse GetExamples()
+        public PaymentCreatedResponse GetExamples()
         {
-            return new PaymentResponse()
+            return new PaymentCreatedResponse()
             {
-                Status = "Created", TimeStamp = DateTime.Now, TransactionId = Guid.NewGuid()
+                Status = "Created", TimeStamp = DateTime.Now, PaymentId = Guid.NewGuid()
             };
         }
     }

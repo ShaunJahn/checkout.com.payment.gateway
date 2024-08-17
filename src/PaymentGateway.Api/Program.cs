@@ -5,7 +5,6 @@ using Azure.Storage.Queues;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -25,91 +24,16 @@ using Swashbuckle.AspNetCore.Filters;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Checkout.com Payment API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Please enter token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "bearer"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
-                }
-            },
-            new string[]{}
-        }
-    });
-});
-builder.Services.AddSwaggerGen(options =>
-{
-    options.ExampleFilters();
-});
 
-builder.Services.AddAuthentication(option =>
-    {
-        option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(jwtOption =>
-    {
-        var key = "SomeKeyVaultKeyOrAppSettingsKeyHardCodedForDEMO!]]]]";
-        var keyBytes = Encoding.ASCII.GetBytes(key);
-        jwtOption.SaveToken = true;
-        jwtOption.TokenValidationParameters = new TokenValidationParameters
-        {
-            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-            ValidateLifetime = true,
-            ValidateAudience = false,
-            ValidateIssuer = false
-        };
-    });
+SetLoggingContext(builder);
+SetSwagger(builder);
+SetMediatorContext(builder);
+SetAuthenticationContext(builder);
+SetCosmosContext(builder);
 
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .CreateLogger();
-
-builder.Host.UseSerilog();
-builder.Services.AddSingleton(Log.Logger);
-
-builder.Services.AddSwaggerExamplesFromAssemblies(Assembly.GetEntryAssembly());
-builder.Services.AddMediator();
-builder.Services.AddTransient<ExceptionHandlingMiddleware>();
-builder.Services.AddTransient<IJwtTokenManager, JwtTokenManager>();
-
-builder.Services.Configure<CosmosDbSettings>(options => builder.Configuration.GetSection("CosmosDb").Bind(options));
-builder.Services.AddSingleton<CosmosClient>(serviceProvider =>
-{
-    var settings = serviceProvider.GetRequiredService<IOptions<CosmosDbSettings>>().Value;
-    var cosmosClient = new CosmosClient(settings.Account, settings.Key);
-
-    var database = cosmosClient.CreateDatabaseIfNotExistsAsync(settings.DatabaseId).GetAwaiter().GetResult();
-    database.Database.CreateContainerIfNotExistsAsync(new ContainerProperties
-    {
-        Id = settings.ContainerId,
-        PartitionKeyPath = "/id"
-    }).GetAwaiter().GetResult();
-
-    return cosmosClient;
-});
 builder.Services.AddTransient<IPaymentRepository, PaymentRepository>();
 
-
-builder.Services.AddSingleton<QueueServiceClient>(serviceProvider =>
+builder.Services.AddSingleton(serviceProvider =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
     var connectionString = configuration["AzureStorage:ConnectionString"];
@@ -121,10 +45,8 @@ builder.Services.AddHostedService<EventHubListenerService>();
 
 builder.Services.AddSingleton<PaymentQueueService>();
 builder.Services.AddSingleton<EventHubSimulatorService>();
-
 builder.Services.AddTransient<IHandlePaymentGateway, ProcessPaymentsHandler>();
 builder.Services.AddTransient<IHandlePaymentGateway, CreatePaymentProcessor>();
-
 builder.Services.AddTransient<IBankSimulatorProcessor, BankSimulatorProcessor>();
 
 builder.Services.AddHttpClient<BankSimulatorProcessor>(client =>
@@ -146,3 +68,98 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.Run();
+
+
+static void SetLoggingContext(WebApplicationBuilder builder)
+{
+    Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateLogger();
+
+    builder.Host.UseSerilog();
+    builder.Services.AddSingleton(Log.Logger);
+}
+
+static void SetSwagger(WebApplicationBuilder builder)
+{
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerExamplesFromAssemblies(Assembly.GetEntryAssembly());
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "Checkout.com Payment API", Version = "v1" });
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Description = "Please enter token",
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            BearerFormat = "JWT",
+            Scheme = "bearer"
+        });
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
+        c.ExampleFilters();
+    });
+}
+
+static void SetMediatorContext(WebApplicationBuilder builder)
+{
+    builder.Services.AddMediator();
+    builder.Services.AddTransient<ExceptionHandlingMiddleware>();
+}
+
+static void SetCosmosContext(WebApplicationBuilder builder)
+{
+    builder.Services.Configure<CosmosDbSettings>(options => builder.Configuration.GetSection("CosmosDb").Bind(options));
+    builder.Services.AddSingleton<CosmosClient>(serviceProvider =>
+    {
+        var settings = serviceProvider.GetRequiredService<IOptions<CosmosDbSettings>>().Value;
+        var cosmosClient = new CosmosClient(settings.Account, settings.Key);
+
+        var database = cosmosClient.CreateDatabaseIfNotExistsAsync(settings.DatabaseId).GetAwaiter().GetResult();
+        database.Database.CreateContainerIfNotExistsAsync(new ContainerProperties
+        {
+            Id = settings.ContainerId,
+            PartitionKeyPath = "/id"
+        }).GetAwaiter().GetResult();
+
+        return cosmosClient;
+    });
+}
+
+static void SetAuthenticationContext(WebApplicationBuilder builder)
+{
+    builder.Services.AddTransient<IJwtTokenManager, JwtTokenManager>();
+    builder.Services.AddAuthentication(option =>
+    {
+        option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(jwtOption =>
+    {
+        var key = "SomeKeyVaultKeyOrAppSettingsKeyHardCodedForDEMO!]]]]";
+        var keyBytes = Encoding.ASCII.GetBytes(key);
+        jwtOption.SaveToken = true;
+        jwtOption.TokenValidationParameters = new TokenValidationParameters
+        {
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+            ValidateLifetime = true,
+            ValidateAudience = false,
+            ValidateIssuer = false
+        };
+    });
+}

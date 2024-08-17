@@ -1,8 +1,8 @@
 ﻿namespace PaymentGateway.Api.Contracts
 {
-    public class PaymentResponse
+    public class PaymentCreatedResponse
     {
-        public Guid TransactionId { get; set; }
+        public Guid PaymentId { get; set; }
         public DateTime TimeStamp { get; set; }
         public required string Status { get; set; }
     }
