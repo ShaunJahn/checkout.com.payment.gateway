@@ -35,7 +35,7 @@ namespace PaymentGateway.Infrastructure
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                return new PaymentDto();
+                throw new Exception("TEMP");
             }
         }
 
@@ -44,7 +44,9 @@ namespace PaymentGateway.Infrastructure
             var payment = await GetPaymentByIdAsync(paymentUpdate.id);
             if (payment != null)
             {
-                await UpsertPaymentAsync(payment);
+                payment.Status = paymentUpdate.Status;
+                payment.AuthorizationCode = payment.AuthorizationCode;
+                await _container.UpsertItemAsync(payment);
             }
         }
 

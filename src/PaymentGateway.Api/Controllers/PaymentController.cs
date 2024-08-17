@@ -16,7 +16,7 @@ namespace PaymentGateway.Api.Controllers
         [ProducesResponseType(typeof(PaymentResponse), StatusCodes.Status202Accepted)]
         [ProducesResponseType(typeof(ValidationErrorResponse), StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> ProcessPaymentAsync(PaymentRequest request)
+        public async Task<IActionResult> ProcessPaymentAsync(ClientPaymentRequest request)
         {
             var paymentRequest = new PaymentRequestCommand
             {

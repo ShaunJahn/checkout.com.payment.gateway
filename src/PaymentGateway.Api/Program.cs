@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using PaymentGateway.Api;
 using PaymentGateway.Api.Auth;
 using PaymentGateway.Api.MiddleWare;
+using PaymentGateway.Bank.Simulator;
 using PaymentGateway.Infrastructure;
 using PaymentGateway.PaymentService;
 using PaymentGateway.PaymentService.PaymentProcessor;
@@ -123,6 +124,14 @@ builder.Services.AddSingleton<EventHubSimulatorService>();
 
 builder.Services.AddTransient<IHandlePaymentGateway, ProcessPaymentsHandler>();
 builder.Services.AddTransient<IHandlePaymentGateway, CreatePaymentProcessor>();
+
+builder.Services.AddTransient<IBankSimulatorProcessor, BankSimulatorProcessor>();
+
+builder.Services.AddHttpClient<BankSimulatorProcessor>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:8080/");
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

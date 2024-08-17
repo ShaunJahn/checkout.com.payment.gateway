@@ -4,16 +4,16 @@ using Swashbuckle.AspNetCore.Filters;
 
 namespace PaymentGateway.Api.V1.Examples
 {
-    public class RequestPaymentExample : IExamplesProvider<PaymentRequest>
+    public class RequestPaymentExample : IExamplesProvider<ClientPaymentRequest>
     {
-        public PaymentRequest GetExamples()
+        public ClientPaymentRequest GetExamples()
         {
-            return new PaymentRequest
+            return new ClientPaymentRequest
             {
-                CardNumber = "12345678901232",
-                Currency = "USD",
-                Cvv = "334",
-                ExpiryMonth = 12,
+                CardNumber = "2222405343248877",
+                Currency = "GBP",
+                Cvv = "123",
+                ExpiryMonth = 04,
                 ExpiryYear = 2025,
                 Amount = 100
             };

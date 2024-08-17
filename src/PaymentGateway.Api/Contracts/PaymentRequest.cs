@@ -1,6 +1,6 @@
 ﻿namespace PaymentGateway.Api.Contracts
 {
-    public class PaymentRequest
+    public class ClientPaymentRequest
     {
         public required string CardNumber { get; set; }
         public int ExpiryMonth { get; set; }

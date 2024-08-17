@@ -4,7 +4,7 @@
     {
         Creating = 0,
         Processing = 1,
-        Processed = 2,
+        Authorized = 2,
         Failed = 3
     }
 }

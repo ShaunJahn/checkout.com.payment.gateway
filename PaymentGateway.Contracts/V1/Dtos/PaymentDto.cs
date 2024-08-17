@@ -2,14 +2,15 @@
 {
     public class PaymentDto
     {
-        public string id { get; set; }
+        public required string id { get; set; }
         public DateTime Timestamp { get; set; }
-        public string Status { get; set; }
-        public string CardNumber { get; set; }
+        public required string Status { get; set; }
+        public required string CardNumber { get; set; }
         public int ExpiryMonth { get; set; }
         public int ExpiryYear { get; set; }
-        public string Currency { get; set; }
+        public required string Currency { get; set; }
         public int Amount { get; set; }
-        public string Cvv { get; set; }
+        public required string Cvv { get; set; }
+        public Guid AuthorizationCode { get; set; }
     }
 }
