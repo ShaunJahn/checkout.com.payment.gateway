@@ -27,6 +27,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.Infrastructu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.Api", "src\PaymentGateway.Api\PaymentGateway.Api.csproj", "{886ADDDF-776C-4D9C-BF70-C103924D356D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentGateway.Contracts", "PaymentGateway.Contracts\PaymentGateway.Contracts.csproj", "{50A01D9F-71EA-49CB-B2DC-0D93E33BE592}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentGateway.Common", "PaymentGateway.Common\PaymentGateway.Common.csproj", "{9B734ED4-9572-4AD2-8B6F-88CB84AC9023}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +61,14 @@ Global
 		{886ADDDF-776C-4D9C-BF70-C103924D356D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{886ADDDF-776C-4D9C-BF70-C103924D356D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{886ADDDF-776C-4D9C-BF70-C103924D356D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50A01D9F-71EA-49CB-B2DC-0D93E33BE592}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50A01D9F-71EA-49CB-B2DC-0D93E33BE592}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50A01D9F-71EA-49CB-B2DC-0D93E33BE592}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50A01D9F-71EA-49CB-B2DC-0D93E33BE592}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B734ED4-9572-4AD2-8B6F-88CB84AC9023}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B734ED4-9572-4AD2-8B6F-88CB84AC9023}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B734ED4-9572-4AD2-8B6F-88CB84AC9023}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B734ED4-9572-4AD2-8B6F-88CB84AC9023}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -72,6 +84,8 @@ Global
 		{3136A906-E800-4BA2-8E13-255CBE1CDF2F} = {00D5A95D-C424-4ABB-B09D-B7B9D658AD99}
 		{4614E594-8ECE-4B36-9D80-E6235BF8B7A4} = {F36BD266-CD75-4438-9BF9-CD91CDB18F2B}
 		{886ADDDF-776C-4D9C-BF70-C103924D356D} = {00D5A95D-C424-4ABB-B09D-B7B9D658AD99}
+		{50A01D9F-71EA-49CB-B2DC-0D93E33BE592} = {F36BD266-CD75-4438-9BF9-CD91CDB18F2B}
+		{9B734ED4-9572-4AD2-8B6F-88CB84AC9023} = {F36BD266-CD75-4438-9BF9-CD91CDB18F2B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E9A5F99C-5D83-4268-A239-0FFA3485D38D}

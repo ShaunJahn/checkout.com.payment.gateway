@@ -1,11 +1,18 @@
 using System.Reflection;
 using System.Text;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+
 using PaymentGateway.Api;
 using PaymentGateway.Api.Auth;
 using PaymentGateway.Api.MiddleWare;
+using PaymentGateway.Infrastructure;
+
 using Serilog;
 
 using Swashbuckle.AspNetCore.Filters;
@@ -79,6 +86,22 @@ builder.Services.AddMediator();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddTransient<IJwtTokenManager, JwtTokenManager>();
 
+builder.Services.Configure<CosmosDbSettings>(options => builder.Configuration.GetSection("CosmosDb").Bind(options));
+builder.Services.AddSingleton<CosmosClient>(serviceProvider =>
+{
+    var settings = serviceProvider.GetRequiredService<IOptions<CosmosDbSettings>>().Value;
+    var cosmosClient = new CosmosClient(settings.Account, settings.Key);
+
+    var database = cosmosClient.CreateDatabaseIfNotExistsAsync(settings.DatabaseId).GetAwaiter().GetResult();
+    database.Database.CreateContainerIfNotExistsAsync(new ContainerProperties
+    {
+        Id = settings.ContainerId,
+        PartitionKeyPath = "/id"
+    }).GetAwaiter().GetResult();
+
+    return cosmosClient;
+});
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

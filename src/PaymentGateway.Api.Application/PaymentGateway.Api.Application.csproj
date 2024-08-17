@@ -14,4 +14,8 @@
         <PackageReference Include="Serilog" Version="4.0.1" />
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\PaymentGateway.Infrastructure\PaymentGateway.Infrastructure.csproj" />
+    </ItemGroup>
+
 </Project>

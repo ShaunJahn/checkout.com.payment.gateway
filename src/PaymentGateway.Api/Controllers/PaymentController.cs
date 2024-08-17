@@ -7,7 +7,7 @@ using PaymentGateway.Api.Contracts;
 
 namespace PaymentGateway.Api.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("[controller]")]
     public class PaymentController(IMediator mediator) : ControllerBase

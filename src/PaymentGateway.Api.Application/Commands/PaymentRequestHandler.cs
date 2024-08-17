@@ -1,24 +1,35 @@
-﻿namespace PaymentGateway.Api.Application.Commands
-{
-    public class PaymentRequestHandler : ICommandHandler<PaymentRequestCommand, PaymentRequestResponse>
-    {
-        public PaymentRequestHandler()
-        {
+﻿using PaymentGateway.Contracts.V1.Dtos;
+using PaymentGateway.Infrastructure;
 
-        }
+namespace PaymentGateway.Api.Application.Commands
+{
+    public class PaymentRequestHandler(IPaymentRepository paymentRepository) : ICommandHandler<PaymentRequestCommand, PaymentRequestResponse>
+    {
+        private readonly IPaymentRepository _paymentRepository = paymentRepository;
 
         public async Task<PaymentRequestResponse> Handle(PaymentRequestCommand request, CancellationToken cancellationToken)
         {
-            var response = new PaymentRequestResponse
+            var payment = new PaymentDto
             {
-                TransactionId = Guid.NewGuid(),
-                TimeStamp = DateTime.UtcNow,
-                Status = "Success"
+                id = Guid.NewGuid().ToString(),
+                Timestamp = DateTime.UtcNow,
+                Status = "Pending",
+                CardNumber = request.CardNumber,
+                ExpiryMonth = request.ExpiryMonth,
+                ExpiryYear = request.ExpiryYear,
+                Currency = request.Currency,
+                Amount = request.Amount,
+                Cvv = request.Cvv
             };
 
-            await Task.Delay(1, cancellationToken);
+            var response = await _paymentRepository.UpsertPaymentAsync(payment);
 
-            return response;
+            return new PaymentRequestResponse
+            {
+                Status = response.Status,
+                TimeStamp = response.Timestamp,
+                TransactionId = Guid.Parse(response.id)
+            };
         }
     }
 }
