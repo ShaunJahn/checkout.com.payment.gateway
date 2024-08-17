@@ -1,6 +1,8 @@
 using System.Reflection;
 using System.Text;
 
+using Azure.Storage.Queues;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +14,8 @@ using PaymentGateway.Api;
 using PaymentGateway.Api.Auth;
 using PaymentGateway.Api.MiddleWare;
 using PaymentGateway.Infrastructure;
+using PaymentGateway.PaymentService;
+using PaymentGateway.PaymentService.PaymentProcessor;
 
 using Serilog;
 
@@ -101,7 +105,20 @@ builder.Services.AddSingleton<CosmosClient>(serviceProvider =>
 
     return cosmosClient;
 });
-builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddTransient<IPaymentRepository, PaymentRepository>();
+
+
+builder.Services.AddSingleton<QueueServiceClient>(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var connectionString = configuration["AzureStorage:ConnectionString"];
+    return new QueueServiceClient(connectionString);
+});
+
+builder.Services.AddHostedService<PaymentInitializerProcessor>();
+
+builder.Services.AddSingleton<PaymentQueueService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

@@ -16,8 +16,6 @@ namespace PaymentGateway.Api.MiddleWare
             }
             catch (Exception e)
             {
-                logger.LogError(e, e.Message);
-
                 await HandleExceptionAsync(context, e);
             }
         }

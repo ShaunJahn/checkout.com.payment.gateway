@@ -12,7 +12,7 @@
 
     public record PaymentRequestResponse
     {
-        public Guid TransactionId { get; set; }
+        public string TransactionId { get; set; }
         public DateTime TimeStamp { get; set; }
         public required string Status { get; set; }
     }
