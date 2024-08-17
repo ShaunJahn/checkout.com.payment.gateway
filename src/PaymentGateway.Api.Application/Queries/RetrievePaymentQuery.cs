@@ -1,6 +1,11 @@
-﻿namespace PaymentGateway.Api.Contracts
+﻿namespace PaymentGateway.Api.Application.Queries
 {
-    public class PaymentResponse
+    public class RetrievePaymentQuery : IQuery<RetrievePaymentQueryResponse>
+    {
+        public required string Id { get; set; }
+    }
+
+    public record RetrievePaymentQueryResponse
     {
         public required string Id { get; set; }
         public required string Status { get; set; }

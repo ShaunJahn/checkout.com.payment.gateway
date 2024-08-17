@@ -34,8 +34,8 @@ namespace PaymentGateway.Api.Application.Commands
                 Cvv = request.Cvv
             };
 
-            await _paymentQueueService.SendPaymentAsync(payment);
-            await _eventHubSimulatorService.SendMessageAsync(payment, payment.id);
+            await _paymentQueueService.SendPaymentAsync(payment, cancellationToken);
+            await _eventHubSimulatorService.SendMessageAsync(payment, payment.id, cancellationToken);
 
             _logger.Information("Payment Successfully Created And Will Be Processed: {PaymentRequest}", payment.id);
 
@@ -43,7 +43,7 @@ namespace PaymentGateway.Api.Application.Commands
             {
                 Status = payment.Status,
                 TimeStamp = payment.Timestamp,
-                TransactionId = payment.id
+                PaymentId = payment.id
             };
         }
     }

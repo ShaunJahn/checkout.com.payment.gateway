@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using PaymentGateway.Api.Application.Commands;
+using PaymentGateway.Api.Application.Queries;
 using PaymentGateway.Api.Contracts;
 
 namespace PaymentGateway.Api.Controllers
@@ -38,15 +39,11 @@ namespace PaymentGateway.Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> RetrievePaymentAsync(Guid paymentId)
         {
-            var paymentRequest = new PaymentRequestCommand
+            var paymentRequest = new RetrievePaymentQuery
             {
-                CardNumber = request.CardNumber,
-                ExpiryMonth = request.ExpiryMonth,
-                ExpiryYear = request.ExpiryYear,
-                Currency = request.Currency,
-                Amount = request.Amount,
-                Cvv = request.Cvv
+                Id = paymentId.ToString()
             };
+
             var response = await mediator.Send(paymentRequest);
             return Ok(response);
         }

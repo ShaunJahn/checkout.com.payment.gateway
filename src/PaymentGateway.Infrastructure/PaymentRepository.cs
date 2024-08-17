@@ -47,7 +47,7 @@ namespace PaymentGateway.Infrastructure
             if (payment != null)
             {
                 payment.Status = paymentUpdate.Status;
-                payment.AuthorizationCode = payment.AuthorizationCode;
+                payment.AuthorizationCode = paymentUpdate.AuthorizationCode;
                 await _container.UpsertItemAsync(payment, cancellationToken: cancellationToken);
             }
         }
@@ -56,7 +56,7 @@ namespace PaymentGateway.Infrastructure
         {
             try
             {
-                var response = await _container.CreateItemAsync(payment, new PartitionKey(payment.id), cancellationToken: cancellationToken);
+                var response = await _container.UpsertItemAsync(payment, new PartitionKey(payment.id), cancellationToken: cancellationToken);
                 return response.Resource;
             }
             catch (CosmosException ex)
