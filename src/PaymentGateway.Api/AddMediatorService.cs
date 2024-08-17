@@ -12,6 +12,7 @@ namespace PaymentGateway.Api
             services.AddMediatR(x => x.RegisterServicesFromAssemblies((typeof(Program).Assembly)));
             services.AddApplication();
 
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
             services.AddValidatorsFromAssembly(typeof(AddMediatorService).Assembly);

@@ -6,6 +6,8 @@ using Microsoft.OpenApi.Models;
 using PaymentGateway.Api;
 using PaymentGateway.Api.Auth;
 using PaymentGateway.Api.MiddleWare;
+using Serilog;
+
 using Swashbuckle.AspNetCore.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,6 +65,15 @@ builder.Services.AddAuthentication(option =>
         };
     });
 
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+builder.Services.AddSingleton(Log.Logger);
+
 builder.Services.AddSwaggerExamplesFromAssemblies(Assembly.GetEntryAssembly());
 builder.Services.AddMediator();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
@@ -76,6 +87,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
