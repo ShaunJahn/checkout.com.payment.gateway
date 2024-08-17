@@ -5,7 +5,7 @@ namespace PaymentGateway.Infrastructure
     public interface IPaymentRepository
     {
         Task<PaymentDto> UpsertPaymentAsync(PaymentDto payment);
-        Task UpdatePaymentStatusAsync(string id, string status);
+        Task UpdatePaymentStatusAsync(PaymentDto paymentUpdate);
         Task<PaymentDto> GetPaymentByIdAsync(string id);
     }
 }

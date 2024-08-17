@@ -116,8 +116,10 @@ builder.Services.AddSingleton<QueueServiceClient>(serviceProvider =>
 });
 
 builder.Services.AddHostedService<PaymentInitializerProcessor>();
+builder.Services.AddHostedService<EventHubListenerService>();
 
 builder.Services.AddSingleton<PaymentQueueService>();
+builder.Services.AddSingleton<EventHubSimulatorService>();
 
 var app = builder.Build();
 

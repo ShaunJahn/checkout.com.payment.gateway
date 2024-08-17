@@ -20,17 +20,20 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
         private readonly QueueClient _queueClient;
         private readonly IPaymentRepository _paymentRepository;
         private readonly ILogger _logger;
+        private readonly EventHubSimulatorService _eventHubSimulatorService;
 
         public PaymentInitializerProcessor(
             QueueServiceClient queueServiceClient,
             IConfiguration configuration,
             IPaymentRepository paymentRepository,
-            ILogger logger)
+            ILogger logger,
+            EventHubSimulatorService eventHubSimulatorService)
         {
             var queueName = configuration["AzureStorage:QueueName"];
             _queueClient = queueServiceClient.GetQueueClient(queueName);
             _paymentRepository = paymentRepository;
             _logger = logger;
+            _eventHubSimulatorService = eventHubSimulatorService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -56,9 +59,11 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
                     }
 
                     payment.Status = PaymentStatus.Processing.ToString();
-                    var paymentResponse = await _paymentRepository.UpsertPaymentAsync(payment);
+                    
+                    await _paymentRepository.UpsertPaymentAsync(payment);
+                    await _eventHubSimulatorService.SendMessageAsync(payment);
 
-                    _logger.Information("Payment Sucessfully created with PaymentId: {PaymentId} and Status: {Status} in {Stopwatch}ms", paymentResponse.id, payment.Status, stopwatch);
+                    _logger.Information("Payment Sucessfully created with PaymentId: {PaymentId} and Status: {Status} in {Stopwatch}ms", payment.id, payment.Status, stopwatch);
                     await _queueClient.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt);
                 }
             }

@@ -39,13 +39,11 @@ namespace PaymentGateway.Infrastructure
             }
         }
 
-        public async Task UpdatePaymentStatusAsync(string id, string status)
+        public async Task UpdatePaymentStatusAsync(PaymentDto paymentUpdate)
         {
-            var payment = await GetPaymentByIdAsync(id);
+            var payment = await GetPaymentByIdAsync(paymentUpdate.id);
             if (payment != null)
             {
-                payment.Status = status;
-                payment.Timestamp = DateTime.UtcNow;
                 await UpsertPaymentAsync(payment);
             }
         }

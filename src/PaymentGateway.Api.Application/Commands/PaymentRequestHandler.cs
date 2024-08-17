@@ -6,10 +6,11 @@ using Serilog;
 
 namespace PaymentGateway.Api.Application.Commands
 {
-    public class PaymentRequestHandler(PaymentQueueService paymentQueueService, ILogger logger) : ICommandHandler<PaymentRequestCommand, PaymentRequestResponse>
+    public class PaymentRequestHandler(PaymentQueueService paymentQueueService, ILogger logger, EventHubSimulatorService eventHubSimulatorService) : ICommandHandler<PaymentRequestCommand, PaymentRequestResponse>
     {
-        private readonly PaymentQueueService _paymentRepository = paymentQueueService;
+        private readonly PaymentQueueService _paymentQueueService = paymentQueueService;
         private readonly ILogger _logger = logger;
+        private readonly EventHubSimulatorService _eventHubSimulatorService = eventHubSimulatorService;
 
         public async Task<PaymentRequestResponse> Handle(PaymentRequestCommand request, CancellationToken cancellationToken)
         {
@@ -27,7 +28,8 @@ namespace PaymentGateway.Api.Application.Commands
                 Cvv = request.Cvv
             };
 
-            await _paymentRepository.SendPaymentAsync(payment);
+            await _paymentQueueService.SendPaymentAsync(payment);
+            await _eventHubSimulatorService.SendMessageAsync(payment);
 
             _logger.Information("Payment Request Sent: {PaymentRequest}", payment);
 
