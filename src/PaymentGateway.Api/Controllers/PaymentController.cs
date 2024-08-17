@@ -31,5 +31,24 @@ namespace PaymentGateway.Api.Controllers
             var response = await mediator.Send(paymentRequest);
             return Ok(response);
         }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(PaymentResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> RetrievePaymentAsync(Guid paymentId)
+        {
+            var paymentRequest = new PaymentRequestCommand
+            {
+                CardNumber = request.CardNumber,
+                ExpiryMonth = request.ExpiryMonth,
+                ExpiryYear = request.ExpiryYear,
+                Currency = request.Currency,
+                Amount = request.Amount,
+                Cvv = request.Cvv
+            };
+            var response = await mediator.Send(paymentRequest);
+            return Ok(response);
+        }
     }
 }

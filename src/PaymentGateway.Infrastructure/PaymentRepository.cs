@@ -1,4 +1,6 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using System.Threading;
+
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 
 using PaymentGateway.Contracts.V1.Dtos;
@@ -26,11 +28,11 @@ namespace PaymentGateway.Infrastructure
             _logger = logger;
         }
 
-        public async Task<PaymentDto> GetPaymentByIdAsync(string id)
+        public async Task<PaymentDto> GetPaymentByIdAsync(string id, CancellationToken cancellationToken)
         {
             try
             {
-                ItemResponse<PaymentDto> response = await _container.ReadItemAsync<PaymentDto>(id, new PartitionKey(id));
+                ItemResponse<PaymentDto> response = await _container.ReadItemAsync<PaymentDto>(id, new PartitionKey(id), cancellationToken: cancellationToken);
                 return response.Resource;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -39,22 +41,22 @@ namespace PaymentGateway.Infrastructure
             }
         }
 
-        public async Task UpdatePaymentStatusAsync(PaymentDto paymentUpdate)
+        public async Task UpdatePaymentStatusAsync(PaymentDto paymentUpdate, CancellationToken cancellationToken)
         {
-            var payment = await GetPaymentByIdAsync(paymentUpdate.id);
+            var payment = await GetPaymentByIdAsync(paymentUpdate.id, cancellationToken: cancellationToken);
             if (payment != null)
             {
                 payment.Status = paymentUpdate.Status;
                 payment.AuthorizationCode = payment.AuthorizationCode;
-                await _container.UpsertItemAsync(payment);
+                await _container.UpsertItemAsync(payment, cancellationToken: cancellationToken);
             }
         }
 
-        public async Task<PaymentDto> UpsertPaymentAsync(PaymentDto payment)
+        public async Task<PaymentDto> UpsertPaymentAsync(PaymentDto payment, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await _container.CreateItemAsync(payment, new PartitionKey(payment.id));
+                var response = await _container.CreateItemAsync(payment, new PartitionKey(payment.id), cancellationToken: cancellationToken);
                 return response.Resource;
             }
             catch (CosmosException ex)

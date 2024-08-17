@@ -60,10 +60,10 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
                 payment.Status = PaymentStatus.Failed.ToString();
             }
 
-            await _paymentRepository.UpdatePaymentStatusAsync(payment);
-            await _eventHubSimulatorService.SendMessageAsync(payment);
+            await _paymentRepository.UpdatePaymentStatusAsync(payment, cancellationToken);
+            await _eventHubSimulatorService.SendMessageAsync(payment, payment.id, cancellationToken);
 
-            _logger.Information("Payment Sucessfully created with PaymentId: {PaymentId} and Status: {Status}", payment.id, payment.Status);
+            _logger.Information("Payment created with PaymentId: {PaymentId} and Status: {Status}", payment.id, payment.Status);
         }
     }
 }

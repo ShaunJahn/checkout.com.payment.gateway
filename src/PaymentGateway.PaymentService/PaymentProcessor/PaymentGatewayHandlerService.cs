@@ -19,34 +19,34 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
     {
         private readonly QueueClient _queueClient;
         private readonly IPaymentRepository _paymentRepository;
-        private readonly ILogger _logger;
         private readonly EventHubSimulatorService _eventHubSimulatorService;
         private readonly PaymentQueueService _paymentQueueService;
         private readonly IEnumerable<IHandlePaymentGateway> _handlePaymentGateway;
+        private readonly ILogger _logger;
 
         public PaymentGatewayHandlerService(
             QueueServiceClient queueServiceClient,
             IConfiguration configuration,
             IPaymentRepository paymentRepository,
-            ILogger logger,
             EventHubSimulatorService eventHubSimulatorService,
             PaymentQueueService paymentQueueService,
-            IEnumerable<IHandlePaymentGateway> handlePaymentGateway)
+            IEnumerable<IHandlePaymentGateway> handlePaymentGateway,
+            ILogger logger)
         {
             var queueName = configuration["AzureStorage:QueueName"];
             _queueClient = queueServiceClient.GetQueueClient(queueName);
             _paymentRepository = paymentRepository;
-            _logger = logger;
             _eventHubSimulatorService = eventHubSimulatorService;
             _paymentQueueService = paymentQueueService;
             _handlePaymentGateway = handlePaymentGateway;
+            _logger = logger;
         }
-        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected async override Task ExecuteAsync(CancellationToken cancellationToken)
         {
             _logger.Information("PaymentInitializerProcessor is starting.");
-            while (!stoppingToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                var message = await _queueClient.ReceiveMessageAsync(cancellationToken: stoppingToken);
+                var message = await _queueClient.ReceiveMessageAsync(cancellationToken: cancellationToken);
 
                 if (message.Value == null)
                 {
@@ -54,25 +54,23 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
                 }
 
                 _logger.Information("Reciveved message: {Message}", message.Value.MessageText);
-                var stopwatch = new Stopwatch();
                 var payment = JsonConvert.DeserializeObject<PaymentDto>(message.Value.MessageText);
 
                 if (payment != null)
                 {
-                    switch ((PaymentStatus)Enum.Parse(typeof(PaymentStatus), payment.Status)
-)
+                    switch ((PaymentStatus)Enum.Parse(typeof(PaymentStatus), payment.Status))
                     {
                         case PaymentStatus.Creating:
                             await _handlePaymentGateway.OfType<CreatePaymentProcessor>()
                                 .FirstOrDefault()!
-                                .HandlePyament(payment, stoppingToken);
+                                .HandlePyament(payment, cancellationToken);
                             break;
                         default:
 
                         case PaymentStatus.Processing:
                             await _handlePaymentGateway!.OfType<ProcessPaymentsHandler>()
                             .FirstOrDefault()!
-                            .HandlePyament(payment, stoppingToken);
+                            .HandlePyament(payment, cancellationToken);
                             break;
                     }
                 }
