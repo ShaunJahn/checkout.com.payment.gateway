@@ -19,7 +19,7 @@ namespace PaymentGateway.Api.Application.Commands
             {
                 id = Guid.NewGuid().ToString(),
                 Timestamp = DateTime.UtcNow,
-                Status = PaymentStatus.Created.ToString(),
+                Status = PaymentStatus.Creating.ToString(),
                 CardNumber = request.CardNumber,
                 ExpiryMonth = request.ExpiryMonth,
                 ExpiryYear = request.ExpiryYear,

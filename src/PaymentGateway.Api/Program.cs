@@ -115,12 +115,14 @@ builder.Services.AddSingleton<QueueServiceClient>(serviceProvider =>
     return new QueueServiceClient(connectionString);
 });
 
-builder.Services.AddHostedService<PaymentInitializerProcessor>();
+builder.Services.AddHostedService<PaymentGatewayHandlerService>();
 builder.Services.AddHostedService<EventHubListenerService>();
 
 builder.Services.AddSingleton<PaymentQueueService>();
 builder.Services.AddSingleton<EventHubSimulatorService>();
 
+builder.Services.AddTransient<IHandlePaymentGateway, ProcessPaymentsHandler>();
+builder.Services.AddTransient<IHandlePaymentGateway, CreatePaymentProcessor>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
