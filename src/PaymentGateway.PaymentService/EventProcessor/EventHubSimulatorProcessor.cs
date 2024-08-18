@@ -32,6 +32,7 @@ public class EventHubListenerService : BackgroundService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
+            await Task.Delay(2000);
             var message = await _queueClient.ReceiveMessageAsync();
 
             if (message.Value != null)
@@ -53,7 +54,7 @@ public class EventHubListenerService : BackgroundService
 
     private async Task TriggerWebhook(EventData eventData, CancellationToken cancellationToken)
     {
-        _logger.Information("Triggered webhook for event: {Event}", eventData.Id);
+        _logger.Information("Triggered webhook for event: {Event} with status {Status}", eventData.Id, eventData.Status);
 
         var webhookUrl = "https://webhook.site/f13ca7c4-76f4-4c70-a884-8352e0206b7b";
         var jsonRequest = JsonConvert.SerializeObject(eventData);

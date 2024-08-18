@@ -30,7 +30,6 @@ SetSwagger(builder);
 SetMediatorContext(builder);
 SetAuthenticationContext(builder);
 SetCosmosContext(builder);
-
 builder.Services.AddTransient<IPaymentRepository, PaymentRepository>();
 
 builder.Services.AddSingleton(serviceProvider =>

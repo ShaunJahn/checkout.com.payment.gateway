@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-using Azure.Storage.Queues;
+﻿using Azure.Storage.Queues;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -43,9 +41,13 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
         }
         protected async override Task ExecuteAsync(CancellationToken cancellationToken)
         {
+            const int maxRetryAttempts = 2;
+            int retryCount = 0;
+
             _logger.Information("PaymentInitializerProcessor is starting.");
             while (!cancellationToken.IsCancellationRequested)
             {
+                await Task.Delay(2000, cancellationToken);
                 var message = await _queueClient.ReceiveMessageAsync(cancellationToken: cancellationToken);
 
                 if (message.Value == null)
@@ -56,28 +58,51 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
                 _logger.Information("Reciveved message: {Message}", message.Value.MessageText);
                 var payment = JsonConvert.DeserializeObject<PaymentDto>(message.Value.MessageText);
 
-                if (payment != null)
+                try
                 {
-                    switch ((PaymentStatus)Enum.Parse(typeof(PaymentStatus), payment.Status))
+                    if (payment != null)
                     {
-                        case PaymentStatus.Creating:
-                            await _handlePaymentGateway.OfType<CreatePaymentProcessor>()
+                        switch ((PaymentStatus)Enum.Parse(typeof(PaymentStatus), payment.Status))
+                        {
+                            case PaymentStatus.Creating:
+                                await _handlePaymentGateway.OfType<CreatePaymentProcessor>()
+                                    .FirstOrDefault()!
+                                    .HandlePyament(payment, cancellationToken);
+                                break;
+                            default:
+
+                            case PaymentStatus.Processing:
+                                await _handlePaymentGateway!.OfType<ProcessPaymentsHandler>()
                                 .FirstOrDefault()!
                                 .HandlePyament(payment, cancellationToken);
-                            break;
-                        default:
-
-                        case PaymentStatus.Processing:
-                            await _handlePaymentGateway!.OfType<ProcessPaymentsHandler>()
-                            .FirstOrDefault()!
-                            .HandlePyament(payment, cancellationToken);
-                            break;
+                                break;
+                        }
                     }
+                    retryCount = 0;
+                    await _queueClient.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt);
                 }
+                catch (Exception ex)
+                {
+                    if (retryCount >= maxRetryAttempts)
+                    {
+                        _logger.Error(ex, "Maximum retry attempts reached. Operation failed.");
+                        await _queueClient.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt);
+                        _logger.Error(ex, "Message sent to dead letter queue.");
+                    }
+                    else
+                    {
+                        retryCount++;
+                        _logger.Error(ex, "An error occurred in PaymentInitializerProcessor. Attempt {RetryCount} of {MaxRetryAttempts}.", retryCount, maxRetryAttempts);
 
-                await _queueClient.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt);
+                        await _queueClient.UpdateMessageAsync(
+                            message.Value.MessageId,
+                            message.Value.PopReceipt,
+                            visibilityTimeout: TimeSpan.FromSeconds(2),
+                            cancellationToken: cancellationToken);
+                    }
+
+                }
             }
         }
     }
-
 }
