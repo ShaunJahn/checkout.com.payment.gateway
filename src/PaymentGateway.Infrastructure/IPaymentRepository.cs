@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-using PaymentGateway.Contracts.V1.Dtos;
+﻿using PaymentGateway.Contracts.V1.Dtos;
 
 namespace PaymentGateway.Infrastructure
 {

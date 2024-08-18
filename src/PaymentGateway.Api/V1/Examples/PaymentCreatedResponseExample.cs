@@ -10,7 +10,9 @@ namespace PaymentGateway.Api.V1.Examples
         {
             return new PaymentCreatedResponse()
             {
-                Status = "Created", TimeStamp = DateTime.Now, PaymentId = Guid.NewGuid()
+                Status = "Created",
+                TimeStamp = DateTime.Now,
+                PaymentId = Guid.NewGuid()
             };
         }
     }

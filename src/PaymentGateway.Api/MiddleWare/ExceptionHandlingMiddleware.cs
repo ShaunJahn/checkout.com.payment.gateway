@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+
 using FluentValidation;
 using FluentValidation.Results;
 
@@ -60,7 +61,7 @@ namespace PaymentGateway.Api.MiddleWare
             exception switch
             {
                 ValidationException => "Validation Error",
-               _ => "Server Error"
+                _ => "Server Error"
             };
 
         private static ApiErrorDetails RetrieveErrorDetails(ValidationFailure failure)

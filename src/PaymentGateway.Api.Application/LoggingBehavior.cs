@@ -1,4 +1,5 @@
 ﻿using MediatR;
+
 using Serilog;
 
 namespace PaymentGateway.Api.Application

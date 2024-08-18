@@ -1,8 +1,12 @@
 ﻿using Azure.Storage.Queues;
+
 using Microsoft.Extensions.Configuration;
-using Serilog;
+
 using Newtonsoft.Json;
+
 using PaymentGateway.Contracts.V1.Dtos;
+
+using Serilog;
 
 namespace PaymentGateway.PaymentService
 {

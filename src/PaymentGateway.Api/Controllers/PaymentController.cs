@@ -1,6 +1,5 @@
 ﻿using MediatR;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using PaymentGateway.Api.Application.Commands;
@@ -35,7 +34,7 @@ namespace PaymentGateway.Api.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(PaymentResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ValidationErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> RetrievePaymentAsync(Guid paymentId)
         {

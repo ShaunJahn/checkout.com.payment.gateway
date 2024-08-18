@@ -1,7 +1,5 @@
-﻿using System.Net.Http;
-using System.Text;
+﻿using System.Text;
 
-using Azure.Core.Pipeline;
 using Azure.Storage.Queues;
 
 using Microsoft.Extensions.Configuration;
@@ -9,8 +7,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
 
 using Newtonsoft.Json;
-
-using PaymentGateway.Contracts.Exceptions;
 
 using Polly;
 using Polly.Extensions.Http;
@@ -28,7 +24,7 @@ public class EventHubListenerService : BackgroundService
         IConfiguration configuration,
         ILogger logger)
     {
-        var queueName = configuration["AzureStorage:QueueName"];
+        var queueName = configuration["AzureStorage:EventQueueName"];
         _queueClient = queueServiceClient.GetQueueClient(queueName);
         _queueClient.CreateIfNotExists();
         _logger = logger;

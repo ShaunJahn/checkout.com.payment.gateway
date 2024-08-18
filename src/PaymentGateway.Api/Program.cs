@@ -17,13 +17,9 @@ using PaymentGateway.Infrastructure;
 using PaymentGateway.PaymentService;
 using PaymentGateway.PaymentService.PaymentProcessor;
 
-using Polly.Extensions.Http;
-using Polly;
-
 using Serilog;
 
 using Swashbuckle.AspNetCore.Filters;
-using PaymentGateway.Contracts.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 

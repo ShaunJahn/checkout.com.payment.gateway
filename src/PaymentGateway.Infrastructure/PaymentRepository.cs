@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-using Microsoft.Azure.Cosmos;
+﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 
 using PaymentGateway.Contracts.V1.Dtos;

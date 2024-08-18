@@ -1,12 +1,13 @@
 ﻿using Azure.Storage.Queues;
-using Newtonsoft.Json;
-using PaymentGateway.Contracts.V1.Dtos;
-using PaymentGateway.Contracts.V1;
-using System.Diagnostics;
-using PaymentGateway.Infrastructure;
+
 using Microsoft.Extensions.Configuration;
-using Serilog;
+
 using PaymentGateway.Bank.Simulator;
+using PaymentGateway.Contracts.V1;
+using PaymentGateway.Contracts.V1.Dtos;
+using PaymentGateway.Infrastructure;
+
+using Serilog;
 
 namespace PaymentGateway.PaymentService.PaymentProcessor
 {

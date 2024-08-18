@@ -1,6 +1,9 @@
 ﻿using System.Diagnostics;
+
 using FluentValidation;
+
 using MediatR;
+
 using ValidationException = FluentValidation.ValidationException;
 
 namespace PaymentGateway.Api.Application

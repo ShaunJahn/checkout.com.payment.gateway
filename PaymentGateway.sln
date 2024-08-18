@@ -23,11 +23,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.Infrastructu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.Api", "src\PaymentGateway.Api\PaymentGateway.Api.csproj", "{886ADDDF-776C-4D9C-BF70-C103924D356D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.Contracts", "PaymentGateway.Contracts\PaymentGateway.Contracts.csproj", "{50A01D9F-71EA-49CB-B2DC-0D93E33BE592}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.Contracts", "src\PaymentGateway.Contracts\PaymentGateway.Contracts.csproj", "{50A01D9F-71EA-49CB-B2DC-0D93E33BE592}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.Common", "PaymentGateway.Common\PaymentGateway.Common.csproj", "{9B734ED4-9572-4AD2-8B6F-88CB84AC9023}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaymentGateway.Common", "src\PaymentGateway.Common\PaymentGateway.Common.csproj", "{9B734ED4-9572-4AD2-8B6F-88CB84AC9023}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentGateway.Bank.Simulator", "PaymentGateway.Bank.Simulator\PaymentGateway.Bank.Simulator.csproj", "{70772146-406D-4C0C-A2B5-D4B97781BE18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentGateway.Bank.Simulator", "src\PaymentGateway.Bank.Simulator\PaymentGateway.Bank.Simulator.csproj", "{70772146-406D-4C0C-A2B5-D4B97781BE18}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

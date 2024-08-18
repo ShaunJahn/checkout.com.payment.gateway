@@ -1,7 +1,8 @@
-﻿using MediatR;
+﻿using FluentValidation;
+
+using MediatR;
 
 using PaymentGateway.Api.Application;
-using FluentValidation;
 
 namespace PaymentGateway.Api
 {

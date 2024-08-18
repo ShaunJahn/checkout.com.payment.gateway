@@ -1,6 +1,9 @@
 ﻿using Azure.Storage.Queues;
+
 using Microsoft.Extensions.Configuration;
+
 using Newtonsoft.Json;
+
 using Serilog;
 
 public class EventHubSimulatorService
@@ -13,7 +16,7 @@ public class EventHubSimulatorService
         IConfiguration configuration,
          ILogger logger)
     {
-        var queueName = configuration["AzureStorage:QueueName"];
+        var queueName = configuration["AzureStorage:EventQueueName"];
         _queueClient = queueServiceClient.GetQueueClient(queueName);
         _queueClient.CreateIfNotExists();
         _logger = logger;
@@ -23,6 +26,6 @@ public class EventHubSimulatorService
     {
         var jsonMessage = JsonConvert.SerializeObject(message);
         _logger.Information("Sending Payment To Events To Be Processed: {Identifier}", identifier);
-        await _queueClient.SendMessageAsync(jsonMessage);
+        await _queueClient.SendMessageAsync(jsonMessage, cancellationToken: cancellationToken);
     }
 }
