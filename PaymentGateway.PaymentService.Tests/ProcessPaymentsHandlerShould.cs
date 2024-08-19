@@ -12,6 +12,8 @@ using PaymentGateway.PaymentService.PaymentProcessor;
 
 using Serilog;
 
+using Xunit;
+
 namespace PaymentGateway.PaymentService.Tests
 {
     public class ProcessPaymentsHandlerShould

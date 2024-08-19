@@ -8,6 +8,8 @@ using PaymentGateway.Contracts.V1.Dtos;
 
 using Serilog;
 
+using Xunit;
+
 namespace PaymentGateway.PaymentService.Tests
 {
     public class EventHubSimulatorServiceShould

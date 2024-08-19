@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Serilog;
 using PaymentGateway.Contracts.V1.Dtos;
 using Azure;
+using Xunit;
 
 namespace PaymentGateway.PaymentService.Tests
 {
