@@ -27,23 +27,23 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '8.0.x'  # Use the appropriate .NET version for your project
-
     - name: Install Docker Compose
       run: |
         curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         chmod +x /usr/local/bin/docker-compose
         docker-compose version
 
-    - name: Build and run Docker Compose services
+    - name: Build and run Docker Compose services with logging
       run: |
-        docker-compose -f docker-compose.yml up --build -d
+        docker-compose -f docker-compose-workflow.yml up --build -d
       env:
         DOCKER_BUILDKIT: 1
         COMPOSE_DOCKER_CLI_BUILD: 1
+        ASPNETCORE_ENVIRONMENT: Development
+        AzureStorage__ConnectionString: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;
+        CosmosDb__Account: https://cosmosdb:8081
+        Serilog__WriteTo__0__Args__ServerUrl: http://seq:5000
+        BankSimulator__BaseUrl: http://bank_simulator:8080
 
     - name: Wait for API to be ready
       run: |
@@ -55,13 +55,11 @@ jobs:
 
     - name: Run tests
       run: |
-        docker-compose run tests
-      env:
-        ASPNETCORE_ENVIRONMENT: Development
-        AzureStorage__ConnectionString: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;
-        CosmosDb__Account: https://cosmosdb:8081
-        Serilog__WriteTo__0__Args__ServerUrl: http://seq:5000
-        BankSimulator__BaseUrl: http://bank_simulator:8080
+        docker-compose -f docker-compose-workflow.yml run -e ASPNETCORE_ENVIRONMENT=Development \
+          -e AzureStorage__ConnectionString="DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1" \
+          -e CosmosDb__Account="https://cosmosdb:8081" \
+          -e Serilog__WriteTo__0__Args__ServerUrl="http://seq:5000" \
+          -e BankSimulator__BaseUrl="http://bank_simulator:8080" tests
 
     - name: Shutdown Docker Compose services
-      run: docker-compose down
+      run: docker-compose -f docker-compose-workflow.yml down

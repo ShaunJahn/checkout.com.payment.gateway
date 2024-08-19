@@ -11,4 +11,4 @@ elif [[ "$OSTYPE" == "msys" ]]; then
   export BankSimulator__BaseUrl="http://host.docker.internal:8080"
 fi
 
-docker-compose up --build -d
+docker-compose up -d

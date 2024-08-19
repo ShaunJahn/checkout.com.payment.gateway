@@ -3,15 +3,11 @@ using System.Text;
 
 using FluentAssertions;
 
-using Microsoft.Azure.Cosmos.Serialization.HybridRow;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-
 using Newtonsoft.Json;
 
 using PaymentGateway.Api.Contracts;
 using PaymentGateway.Api.Tests;
 using PaymentGateway.Contracts.V1;
-using PaymentGateway.Contracts.V1.Dtos;
 
 using Xunit;
 

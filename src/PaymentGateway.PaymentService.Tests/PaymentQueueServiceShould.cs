@@ -1,9 +1,13 @@
 using Azure.Storage.Queues;
-using Moq;
+
 using Microsoft.Extensions.Configuration;
-using Serilog;
+
+using Moq;
+
 using PaymentGateway.Contracts.V1.Dtos;
-using Azure;
+
+using Serilog;
+
 using Xunit;
 
 namespace PaymentGateway.PaymentService.Tests
