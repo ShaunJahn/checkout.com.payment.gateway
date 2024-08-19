@@ -4,6 +4,6 @@ namespace PaymentGateway.Bank.Simulator
 {
     public interface IBankSimulatorProcessor
     {
-        Task<AuthorizePaymentResponse> AuthorizePaymentAsync(PaymentRequest paymentRequest, CancellationToken cancellationToken);
+        Task<AuthorizePaymentResponse> AuthorizePaymentAsync(PaymentRequest paymentRequest, string id, CancellationToken cancellationToken);
     }
 }

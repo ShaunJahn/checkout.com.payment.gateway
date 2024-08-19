@@ -39,8 +39,6 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
         }
         public async Task HandlePayment(PaymentDto payment, CancellationToken cancellationToken)
         {
-            _logger.Information("Sending payment to acquiring bank: {PaymentId}", payment.id);
-
             var response = await _bankSimulatorProcessor.AuthorizePaymentAsync(
                 new PaymentRequest(
                     cardNumber: payment.CardNumber,
@@ -49,6 +47,7 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
                     currency: payment.Currency,
                     amount: payment.Amount,
                     cvv: payment.Cvv),
+                payment.id,
                 cancellationToken);
 
             if (response.IsAuthorized is true)

@@ -11,6 +11,6 @@
         public required string Currency { get; set; }
         public int Amount { get; set; }
         public required string Cvv { get; set; }
-        public Guid AuthorizationCode { get; set; }
+        public Guid? AuthorizationCode { get; set; }
     }
 }

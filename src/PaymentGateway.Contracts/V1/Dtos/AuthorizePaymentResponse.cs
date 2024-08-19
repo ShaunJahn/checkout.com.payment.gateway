@@ -7,6 +7,6 @@ namespace PaymentGateway.Contracts.V1.Dtos
         [JsonProperty("authorized")]
         public bool IsAuthorized { get; set; }
         [JsonProperty("authorization_code")]
-        public Guid AuthorizationCode { get; set; }
+        public Guid? AuthorizationCode { get; set; }
     }
 }

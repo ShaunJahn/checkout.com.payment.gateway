@@ -35,7 +35,7 @@ namespace PaymentGateway.Infrastructure
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                throw new Exception("TEMP");
+                throw new Exception($"Payment with id {id} not found.");
             }
         }
 

@@ -32,6 +32,19 @@ namespace PaymentGateway.Api.MiddleWare
                 {
                     ApiErrorDetailsList = validationException.Errors.Select(RetrieveErrorDetails).ToList()
                 },
+                Exception serverError => new ApiError()
+                {
+                    ApiErrorDetailsList = new List<ApiErrorDetails>()
+                    {
+                        new ApiErrorDetails()
+                        {
+                            MetaData = new Dictionary<string, string>()
+                            {
+                                { "ErrorMessage", serverError.Message }
+                            }
+                        }
+                    }
+                },
                 _ => apiResponseError
             };
 
