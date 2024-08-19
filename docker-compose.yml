@@ -13,11 +13,15 @@ services:
     ports:
       - "8082:8080"
       - "8444:8443"
-    depends_on:
-      azurite:
-        condition: service_started
-      bank_simulator:
-        condition: service_started
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    # depends_on:
+    #   azurite:
+    #     condition: service_started
+    #   bank_simulator:
+    #     condition: service_started
+    #   cosmosdb:
+    #     condition: service_healthy
     networks:
       - my_custom_network
 
@@ -39,9 +43,9 @@ services:
     image: mcr.microsoft.com/azure-storage/azurite
     command: "azurite --loose --blobHost 0.0.0.0 --blobPort 10000 --queueHost 0.0.0.0 --queuePort 10001 --location /workspace --debug /workspace/debug.log"
     ports:
-      - 10010:10000
-      - 10011:10001
-      - 10012:10002
+      - "10010:10000"
+      - "10011:10001"
+      - "10012:10002"
     volumes:
       - ./azurite:/workspace
     networks:
@@ -59,9 +63,21 @@ services:
     volumes:
       - ./data/cosmosdb:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://cosmosdb:8081/_explorer/index.html"]
+      test: ["CMD", "curl", "-f", "https://localhost:8081/_explorer/index.html"]
       interval: 30s
       timeout: 10s
       retries: 10
     networks:
       - my_custom_network
+
+  seq:
+    image: datalust/seq:latest
+    container_name: seq-server
+    ports:
+      - "5000:80"
+    environment:
+      ACCEPT_EULA: Y
+    networks:
+      - my_custom_network
+    volumes:
+      - ./seq-data:/data

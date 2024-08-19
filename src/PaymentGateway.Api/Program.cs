@@ -56,30 +56,26 @@ builder.Services.AddHttpClient<BankSimulatorProcessor>(client =>
 
 var app = builder.Build();
 
-//if (app.Environment.IsDevelopment())
-//{
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI();
-//}
+}
 
-app.UseSerilogRequestLogging();
 //app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.Run();
 
-
 static void SetLoggingContext(WebApplicationBuilder builder)
 {
     Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .CreateLogger();
+         .ReadFrom.Configuration(builder.Configuration)  // This reads the config from appsettings.json
+         .CreateLogger(); ;
 
-    builder.Host.UseSerilog();
-    builder.Services.AddSingleton(Log.Logger);
+    builder.Logging.ClearProviders();  // Clears default logging providers
+    builder.Host.UseSerilog(Log.Logger);   // Registers Serilog as the only logging provider
 }
 
 static void SetSwagger(WebApplicationBuilder builder)
