@@ -18,6 +18,8 @@ using PaymentGateway.Infrastructure;
 using PaymentGateway.PaymentService;
 using PaymentGateway.PaymentService.PaymentProcessor;
 
+using Polly;
+
 using Serilog;
 
 using Swashbuckle.AspNetCore.Filters;
@@ -50,9 +52,10 @@ builder.Services.AddTransient<IHandlePaymentGateway, ProcessPaymentsHandler>();
 builder.Services.AddTransient<IHandlePaymentGateway, CreatePaymentProcessor>();
 builder.Services.AddTransient<IBankSimulatorProcessor, BankSimulatorProcessor>();
 
+var bankSimulatorConfig = builder.Configuration.GetSection("BankSimulator");
 builder.Services.AddHttpClient<BankSimulatorProcessor>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8080/");
+    client.BaseAddress = new Uri(bankSimulatorConfig["BaseUrl"]!);
 });
 
 var app = builder.Build();
@@ -63,7 +66,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
+if (app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseAuthorization();
 app.MapControllers();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -134,14 +141,30 @@ static void SetCosmosContext(WebApplicationBuilder builder)
             }),
             ConnectionMode = ConnectionMode.Gateway
         };
+
+        var retryPolicy = Policy
+            .Handle<HttpRequestException>()
+            .Or<TimeoutException>()
+            .WaitAndRetry(
+                retryCount: int.MaxValue,
+                sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(5),
+                onRetry: (exception, timeSpan, retryCount, context) =>
+                {
+                    Console.WriteLine("Waiting for Cosmos database to start...");
+                    Console.WriteLine($"Retry {retryCount} encountered an error: {exception.Message}. Retrying in {timeSpan}.");
+                });
+
         var cosmosClient = new CosmosClient(settings.Account, settings.Key, options);
 
-        var database = cosmosClient.CreateDatabaseIfNotExistsAsync(settings.DatabaseId).GetAwaiter().GetResult();
-        database.Database.CreateContainerIfNotExistsAsync(new ContainerProperties
+        retryPolicy.Execute(() =>
         {
-            Id = settings.ContainerId,
-            PartitionKeyPath = "/id"
-        }).GetAwaiter().GetResult();
+            var database = cosmosClient.CreateDatabaseIfNotExistsAsync(settings.DatabaseId).GetAwaiter().GetResult();
+            database.Database.CreateContainerIfNotExistsAsync(new ContainerProperties
+            {
+                Id = settings.ContainerId,
+                PartitionKeyPath = "/id"
+            }).GetAwaiter().GetResult();
+        });
 
         return cosmosClient;
     });

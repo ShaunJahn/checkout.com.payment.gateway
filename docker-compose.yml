@@ -1,7 +1,7 @@
 version: "3.8"
 
 networks:
-  my_custom_network:
+  checkout-netwrok:
     driver: bridge
 
 services:
@@ -18,15 +18,16 @@ services:
       - AzureStorage__ConnectionString=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:10010/devstoreaccount1;QueueEndpoint=http://host.docker.internal:10011/devstoreaccount1;
       - CosmosDb__Account=https://host.docker.internal:8081
       - Serilog__WriteTo__0__Args__ServerUrl=http://host.docker.internal:5000
+      - BankSimulator__BaseUrl=http://host.docker.internal:8080
     depends_on:
       azurite:
         condition: service_started
+      cosmosdb:
+        condition: service_started
       bank_simulator:
         condition: service_started
-      cosmosdb:
-        condition: service_healthy
     networks:
-      - my_custom_network
+      - checkout-netwrok
 
   bank_simulator:
     container_name: bank_simulator
@@ -40,7 +41,7 @@ services:
         source: ./imposters
         target: /imposters
     networks:
-      - my_custom_network
+      - checkout-netwrok
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
@@ -52,7 +53,7 @@ services:
     volumes:
       - ./azurite:/workspace
     networks:
-      - my_custom_network
+      - checkout-netwrok
 
   cosmosdb:
     image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
@@ -63,15 +64,14 @@ services:
       - 10252:10252 
       - 10253:10253 
       - 10254:10254
+    environment:
+      - AZURE_COSMOS_EMULATOR_PARTITION_COUNT=1
+      - AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true
+      - AZURE_COSMOS_EMULATOR_NO_SSL=true
     volumes:
       - ./data/cosmosdb:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "https://localhost:8081/_explorer/index.html"]
-      interval: 30s
-      timeout: 10s
-      retries: 10
     networks:
-      - my_custom_network
+      - checkout-netwrok
 
   seq:
     image: datalust/seq:latest
@@ -81,6 +81,6 @@ services:
     environment:
       ACCEPT_EULA: Y
     networks:
-      - my_custom_network
+      - checkout-netwrok
     volumes:
       - ./seq-data:/data
