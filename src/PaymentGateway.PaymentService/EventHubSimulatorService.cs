@@ -14,7 +14,7 @@ public class EventHubSimulatorService
     public EventHubSimulatorService(
         QueueServiceClient queueServiceClient,
         IConfiguration configuration,
-         ILogger logger)
+        ILogger logger)
     {
         var queueName = configuration["AzureStorage:EventQueueName"];
         _queueClient = queueServiceClient.GetQueueClient(queueName);

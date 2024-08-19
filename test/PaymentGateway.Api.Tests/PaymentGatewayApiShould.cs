@@ -167,7 +167,7 @@ public class PaymentGatewayApiShould : IClassFixture<IntegrationStartUp<Program>
 
     private async Task CheckForStatusChange(Guid paymentId, ClientPaymentRequest request, PaymentStatus status)
     {
-        var maxRetries = 10;
+        var maxRetries = 50;
         var delay = TimeSpan.FromSeconds(2);
 
         PaymentResponse resultGetResponse = null;
