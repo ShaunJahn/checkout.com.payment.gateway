@@ -1,0 +1,102 @@
+version: "3.8"
+
+networks:
+  checkout-network:
+    driver: bridge
+
+services:
+  payment_gateway_api:
+    build:
+      context: .
+      dockerfile: src/PaymentGateway.Api/Dockerfile
+    image: paymentgateway/api:latest
+    ports:
+      - "8082:8080"
+      - "8444:8443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - CosmosDb__Account=https://cosmosdb:8081
+      - AzureStorage__ConnectionString=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;
+      - BankSimulator__BaseUrl=http://bank_simulator:8080
+    depends_on:
+      azurite:
+        condition: service_started
+      cosmosdb:
+        condition: service_started
+      bank_simulator:
+        condition: service_started
+    networks:
+      - checkout-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  bank_simulator:
+    container_name: bank_simulator
+    image: bbyars/mountebank:2.8.1
+    ports:
+      - "2525:2525"
+      - "8080:8080"
+    command: --configfile /imposters/bank_simulator.ejs
+    volumes:
+      - type: bind
+        source: ./imposters
+        target: /imposters
+    networks:
+      - checkout-network
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: "azurite --loose --blobHost 0.0.0.0 --blobPort 10000 --queueHost 0.0.0.0 --queuePort 10001 --location /workspace --debug /workspace/debug.log"
+    ports:
+      - "10010:10000"
+      - "10011:10001"
+      - "10012:10002"
+    volumes:
+      - ./azurite:/workspace
+    networks:
+      - checkout-network
+
+  cosmosdb:
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+    container_name: azure.cosmosdb
+    ports:
+      - 8081:8081
+      - 10251:10251 
+      - 10252:10252 
+      - 10253:10253 
+      - 10254:10254
+    environment:
+      - AZURE_COSMOS_EMULATOR_PARTITION_COUNT=1
+      - AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true
+      - AZURE_COSMOS_EMULATOR_NO_SSL=true
+    volumes:
+      - ./data/cosmosdb:/data
+    networks:
+      - checkout-network
+
+  seq:
+    image: datalust/seq:latest
+    container_name: seq-server
+    ports:
+      - "5000:80"
+    environment:
+      ACCEPT_EULA: Y
+    networks:
+      - checkout-network
+    volumes:
+      - ./seq-data:/data
+
+  tests:
+    build:
+      context: .
+      dockerfile: IntegrationTests
+    depends_on:
+      payment_gateway_api:
+        condition: service_healthy
+    networks:
+      - checkout-network
+    command: ["sh", "-c", "echo 'Waiting for services to be ready...' && sleep 60 && dotnet test --logger trx"]
