@@ -1,0 +1,65 @@
+name: Run Integration Tests
+
+on:
+  push:
+    branches:
+      - '**'  # Run on any branch
+  pull_request:
+    branches:
+      - main  # Run on pull requests targeting the main branch
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:20.10.8
+        options: --privileged  # Required for Docker-in-Docker (dind)
+        ports:
+          - 8080:8080
+          - 8081:8081
+          - 5000:5000
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install Docker Compose
+      run: |
+        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+        docker-compose version
+
+    - name: Build and run Docker Compose services with logging
+      run: |
+        docker-compose -f docker-compose-workflow.yml up --build -d
+      env:
+        DOCKER_BUILDKIT: 1
+        COMPOSE_DOCKER_CLI_BUILD: 1
+        ASPNETCORE_ENVIRONMENT: Development
+        AzureStorage__ConnectionString: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;
+        CosmosDb__Account: https://cosmosdb:8081
+        Serilog__WriteTo__0__Args__ServerUrl: http://seq:5000
+        BankSimulator__BaseUrl: http://bank_simulator:8080
+
+    - name: Wait for API to be ready
+      run: |
+        echo "Waiting for API to be ready..."
+        until curl -s http://localhost:8082/health; do
+          echo "API not ready yet..."
+          sleep 5
+        done
+
+    - name: Run tests
+      run: |
+        docker-compose -f docker-compose-workflow.yml run -e ASPNETCORE_ENVIRONMENT=Development \
+          -e AzureStorage__ConnectionString="DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1" \
+          -e CosmosDb__Account="https://cosmosdb:8081" \
+          -e Serilog__WriteTo__0__Args__ServerUrl="http://seq:5000" \
+          -e BankSimulator__BaseUrl="http://bank_simulator:8080" tests
+
+    - name: Shutdown Docker Compose services
+      run: docker-compose -f docker-compose-workflow.yml down
