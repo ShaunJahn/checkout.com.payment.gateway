@@ -57,7 +57,7 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
             }
             else
             {
-                payment.Status = PaymentStatus.Failed.ToString();
+                payment.Status = PaymentStatus.Declined.ToString();
             }
 
             await _paymentRepository.UpdatePaymentStatusAsync(payment, cancellationToken);

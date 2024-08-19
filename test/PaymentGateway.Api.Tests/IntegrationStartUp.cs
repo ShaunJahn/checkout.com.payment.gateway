@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 
 namespace PaymentGateway.Api.Tests
 {
@@ -7,12 +8,12 @@ namespace PaymentGateway.Api.Tests
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            //builder.ConfigureAppConfiguration((context, configBuilder) =>
-            //{
-            //    var projectDir = Directory.GetCurrentDirectory();
-            //    var configPath = Path.Combine(projectDir, "IntegrationAppSettings.json");
-            //    configBuilder.AddJsonFile(configPath);
-            //});
+            builder.ConfigureAppConfiguration((context, configBuilder) =>
+            {
+                var projectDir = Directory.GetCurrentDirectory();
+                var configPath = Path.Combine(projectDir, "IntegrationAppSettings.json");
+                configBuilder.AddJsonFile(configPath);
+            });
             base.ConfigureWebHost(builder);
         }
     }
