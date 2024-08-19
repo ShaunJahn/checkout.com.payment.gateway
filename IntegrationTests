@@ -1,0 +1,17 @@
+# Use the official .NET SDK as a parent image
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the project files into the container
+COPY . .
+
+# Restore any dependencies
+RUN dotnet restore
+
+# Build the test project
+RUN dotnet build --configuration Release
+
+# Run the tests
+CMD ["dotnet", "test", "--logger:trx"]

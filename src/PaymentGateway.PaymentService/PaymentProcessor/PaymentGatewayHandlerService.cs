@@ -47,7 +47,6 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
             _logger.Information("PaymentInitializerProcessor is starting.");
             while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(2000, cancellationToken);
                 var message = await _queueClient.ReceiveMessageAsync(cancellationToken: cancellationToken);
 
                 if (message.Value == null)

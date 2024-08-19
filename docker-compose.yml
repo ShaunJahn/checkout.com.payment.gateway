@@ -84,3 +84,12 @@ services:
       - checkout-netwrok
     volumes:
       - ./seq-data:/data
+
+  tests:
+    build:
+      context: .
+      dockerfile: IntegrationTests
+    depends_on:
+      - payment_gateway_api
+    networks:
+      - checkout-netwrok

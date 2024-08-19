@@ -51,7 +51,6 @@ public class EventHubListenerService : BackgroundService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            await Task.Delay(2000);
             var message = await _queueClient.ReceiveMessageAsync();
 
             if (message.Value != null)
