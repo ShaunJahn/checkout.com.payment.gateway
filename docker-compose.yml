@@ -1,6 +1,26 @@
 version: "3.8"
 
+networks:
+  my_custom_network:
+    driver: bridge
+
 services:
+  payment_gateway_api:
+    build:
+      context: .
+      dockerfile: src/PaymentGateway.Api/Dockerfile
+    image: paymentgateway/api:latest
+    ports:
+      - "8082:8080"
+      - "8444:8443"
+    depends_on:
+      azurite:
+        condition: service_started
+      bank_simulator:
+        condition: service_started
+    networks:
+      - my_custom_network
+
   bank_simulator:
     container_name: bank_simulator
     image: bbyars/mountebank:2.8.1
@@ -12,4 +32,36 @@ services:
       - type: bind
         source: ./imposters
         target: /imposters
-      
+    networks:
+      - my_custom_network
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: "azurite --loose --blobHost 0.0.0.0 --blobPort 10000 --queueHost 0.0.0.0 --queuePort 10001 --location /workspace --debug /workspace/debug.log"
+    ports:
+      - 10010:10000
+      - 10011:10001
+      - 10012:10002
+    volumes:
+      - ./azurite:/workspace
+    networks:
+      - my_custom_network
+
+  cosmosdb:
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+    container_name: azure.cosmosdb
+    ports:
+      - 8081:8081
+      - 10251:10251 
+      - 10252:10252 
+      - 10253:10253 
+      - 10254:10254
+    volumes:
+      - ./data/cosmosdb:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://cosmosdb:8081/_explorer/index.html"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    networks:
+      - my_custom_network

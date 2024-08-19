@@ -51,19 +51,19 @@ builder.Services.AddTransient<IBankSimulatorProcessor, BankSimulatorProcessor>()
 
 builder.Services.AddHttpClient<BankSimulatorProcessor>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8080/");
+    client.BaseAddress = new Uri("http://host.docker.internal:8080");
 });
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseSerilogRequestLogging();
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -128,7 +128,16 @@ static void SetCosmosContext(WebApplicationBuilder builder)
     builder.Services.AddSingleton<CosmosClient>(serviceProvider =>
     {
         var settings = serviceProvider.GetRequiredService<IOptions<CosmosDbSettings>>().Value;
-        var cosmosClient = new CosmosClient(settings.Account, settings.Key);
+
+        CosmosClientOptions options = new()
+        {
+            HttpClientFactory = () => new HttpClient(new HttpClientHandler()
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            }),
+            ConnectionMode = ConnectionMode.Gateway
+        };
+        var cosmosClient = new CosmosClient("AccountEndpoint=https://host.docker.internal:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;", options);
 
         var database = cosmosClient.CreateDatabaseIfNotExistsAsync(settings.DatabaseId).GetAwaiter().GetResult();
         database.Database.CreateContainerIfNotExistsAsync(new ContainerProperties
