@@ -462,8 +462,3 @@ azurite_db_table_*
 *.log
 logs/
 seq-data/
-
-# Ignore Docker-specific files
-Dockerfile
-docker-compose*.yml
-entrypoint.sh
