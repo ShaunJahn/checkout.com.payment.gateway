@@ -5,6 +5,7 @@ using Azure.Storage.Queues;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -51,7 +52,7 @@ builder.Services.AddTransient<IBankSimulatorProcessor, BankSimulatorProcessor>()
 
 builder.Services.AddHttpClient<BankSimulatorProcessor>(client =>
 {
-    client.BaseAddress = new Uri("http://host.docker.internal:8080");
+    client.BaseAddress = new Uri("http://localhost:8080/");
 });
 
 var app = builder.Build();
@@ -71,11 +72,11 @@ app.Run();
 static void SetLoggingContext(WebApplicationBuilder builder)
 {
     Log.Logger = new LoggerConfiguration()
-         .ReadFrom.Configuration(builder.Configuration)  // This reads the config from appsettings.json
+         .ReadFrom.Configuration(builder.Configuration)
          .CreateLogger(); ;
 
-    builder.Logging.ClearProviders();  // Clears default logging providers
-    builder.Host.UseSerilog(Log.Logger);   // Registers Serilog as the only logging provider
+    builder.Logging.ClearProviders();
+    builder.Host.UseSerilog(Log.Logger);
 }
 
 static void SetSwagger(WebApplicationBuilder builder)
@@ -133,7 +134,7 @@ static void SetCosmosContext(WebApplicationBuilder builder)
             }),
             ConnectionMode = ConnectionMode.Gateway
         };
-        var cosmosClient = new CosmosClient("AccountEndpoint=https://host.docker.internal:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;", options);
+        var cosmosClient = new CosmosClient(settings.Account, settings.Key, options);
 
         var database = cosmosClient.CreateDatabaseIfNotExistsAsync(settings.DatabaseId).GetAwaiter().GetResult();
         database.Database.CreateContainerIfNotExistsAsync(new ContainerProperties
