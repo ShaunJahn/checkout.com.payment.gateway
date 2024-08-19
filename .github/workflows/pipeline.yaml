@@ -1,0 +1,80 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - '**'  # Run on any branch
+  pull_request:
+    branches:
+      - main  # Run on pull requests targeting the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      AzureStorage__ConnectionString=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:10010/devstoreaccount1;QueueEndpoint=http://host.docker.internal:10011/devstoreaccount1;
+      CosmosDb__Account=https://host.docker.internal:8081
+      Serilog__WriteTo__0__Args__ServerUrl=http://host.docker.internal:5000
+      BankSimulator__BaseUrl=http://host.docker.internal:8080
+
+    services:
+      docker:
+        image: docker:20.10.8
+        options: --privileged  # Required for Docker-in-Docker (dind)
+        ports:
+          - 8080:8080
+          - 8081:8081
+          - 5000:5000
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'  # Use the appropriate .NET version for your project
+
+    - name: Log specific environment variables
+      run: |
+        echo "ASPNETCORE_ENVIRONMENT: $ASPNETCORE_ENVIRONMENT"
+        echo "CosmosDb__Account: $CosmosDb__Account"
+        echo "AzureStorage__ConnectionString: $AzureStorage__ConnectionString"
+
+    - name: Log all environment variables
+      run: env
+
+    - name: Install Docker Compose
+      run: |
+        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+        docker-compose version
+
+    - name: Build and run Docker Compose services
+      run: |
+        docker-compose -f docker-compose.yml up --build -d
+      env:
+        DOCKER_BUILDKIT: 1
+        COMPOSE_DOCKER_CLI_BUILD: 1
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build the solution
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build --logger trx
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: '**/TestResults/*.trx'
+
+    - name: Shutdown Docker Compose services
+      run: docker-compose down

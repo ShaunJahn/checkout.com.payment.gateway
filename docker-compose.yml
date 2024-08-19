@@ -89,7 +89,6 @@ services:
     build:
       context: .
       dockerfile: IntegrationTests
-    depends_on:
-      - payment_gateway_api
     networks:
       - checkout-netwrok
+     
