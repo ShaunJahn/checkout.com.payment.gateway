@@ -18,6 +18,7 @@ services:
       - CosmosDb__Account=https://host.docker.internal:8081
       - AzureStorage__ConnectionString=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:10010/devstoreaccount1;QueueEndpoint=http://host.docker.internal:10011/devstoreaccount1;
       - BankSimulator__BaseUrl=http://host.docker.internal:8080
+      - Serilog__WriteTo__0__Args__ServerUrl=http://host.docker.internal:5000
     depends_on:
       azurite:
         condition: service_started
@@ -94,6 +95,12 @@ services:
     build:
       context: .
       dockerfile: IntegrationTests
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - CosmosDb__Account=https://host.docker.internal:8081
+      - AzureStorage__ConnectionString=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:10010/devstoreaccount1;QueueEndpoint=http://host.docker.internal:10011/devstoreaccount1;
+      - BankSimulator__BaseUrl=http://host.docker.internal:8080
+      - Serilog__WriteTo__0__Args__ServerUrl=http://host.docker.internal:5000
     depends_on:
       payment_gateway_api:
         condition: service_healthy
