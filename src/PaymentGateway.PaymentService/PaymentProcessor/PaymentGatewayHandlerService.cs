@@ -55,7 +55,7 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
                     continue;
                 }
 
-                _logger.Information("Reciveved message: {Message}", message.Value.MessageText);
+                _logger.Information("Received MessageId: {Message}", message.Value.MessageId);
                 var payment = JsonConvert.DeserializeObject<PaymentDto>(message.Value.MessageText);
 
                 try
@@ -67,14 +67,14 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
                             case PaymentStatus.Creating:
                                 await _handlePaymentGateway.OfType<CreatePaymentProcessor>()
                                     .FirstOrDefault()!
-                                    .HandlePyament(payment, cancellationToken);
+                                    .HandlePayment(payment, cancellationToken);
                                 break;
                             default:
 
                             case PaymentStatus.Processing:
                                 await _handlePaymentGateway!.OfType<ProcessPaymentsHandler>()
                                 .FirstOrDefault()!
-                                .HandlePyament(payment, cancellationToken);
+                                .HandlePayment(payment, cancellationToken);
                                 break;
                         }
                     }

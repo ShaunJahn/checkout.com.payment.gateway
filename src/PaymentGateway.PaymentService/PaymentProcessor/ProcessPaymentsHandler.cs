@@ -37,7 +37,7 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
             _paymentQueueService = paymentQueueService;
             _bankSimulatorProcessor = bankSimulatorProcessor;
         }
-        public async Task HandlePyament(PaymentDto payment, CancellationToken cancellationToken)
+        public async Task HandlePayment(PaymentDto payment, CancellationToken cancellationToken)
         {
             _logger.Information("Sending payment to acquiring bank: {PaymentId}", payment.id);
 
@@ -62,7 +62,17 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
             }
 
             await _paymentRepository.UpdatePaymentStatusAsync(payment, cancellationToken);
-            await _eventHubSimulatorService.SendMessageAsync(payment, payment.id, cancellationToken);
+
+            await _eventHubSimulatorService.SendMessageAsync(
+                message: new PaymentEvent(payment.id,
+                                          payment.Timestamp,
+                                          payment.Status,
+                                          payment.CardNumber,
+                                          payment.ExpiryMonth,
+                                          payment.ExpiryYear,
+                                          payment.Currency,
+                                          payment.Amount),
+                payment.id, cancellationToken);
 
             _logger.Information("Payment created with PaymentId: {PaymentId} and Status: {Status}", payment.id, payment.Status);
         }

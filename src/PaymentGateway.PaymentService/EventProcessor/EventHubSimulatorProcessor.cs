@@ -56,15 +56,15 @@ public class EventHubListenerService : BackgroundService
 
             if (message.Value != null)
             {
-                var eventData = JsonConvert.DeserializeObject<EventData>(message.Value.MessageText);
-
-                if (eventData == null)
-                {
-                    await _queueClient.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt, cancellationToken);
-                    continue;
-                }
                 try
                 {
+                    var eventData = JsonConvert.DeserializeObject<PaymentEvent>(message.Value.MessageText);
+
+                    if (eventData == null)
+                    {
+                        await _queueClient.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt, cancellationToken);
+                        continue;
+                    }
                     await TriggerWebhook(eventData, cancellationToken);
                 }
                 catch (Exception ex)
@@ -80,16 +80,15 @@ public class EventHubListenerService : BackgroundService
         }
     }
 
-    private async Task TriggerWebhook(EventData eventData, CancellationToken cancellationToken)
+    private async Task TriggerWebhook(PaymentEvent eventData, CancellationToken cancellationToken)
     {
-        _logger.Information("Triggered webhook for event: {Event} with status {Status}", eventData.Id, eventData.Status);
-
         var webhookUrl = "https://webhook-test.com/b761223986dfbcc568901a8791442a50";
         var jsonRequest = JsonConvert.SerializeObject(eventData);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
-        _logger.Information("Webhook sent for event: {Event}", eventData.Id);
+        _logger.Information("Triggered webhook for event: {Event}, {EventData}", eventData.Id, jsonRequest);
 
         await _httpClient.PostAsync(webhookUrl, content, cancellationToken);
+        _logger.Information("Webhook sent for event: {Event}", eventData.Id);
+
     }
 }

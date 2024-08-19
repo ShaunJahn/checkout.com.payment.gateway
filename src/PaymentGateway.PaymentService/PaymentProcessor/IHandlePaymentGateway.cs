@@ -4,6 +4,6 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
 {
     public interface IHandlePaymentGateway
     {
-        public Task HandlePyament(PaymentDto paymentDto, CancellationToken stoppingToken);
+        public Task HandlePayment(PaymentDto paymentDto, CancellationToken stoppingToken);
     }
 }

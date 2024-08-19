@@ -33,14 +33,23 @@ namespace PaymentGateway.PaymentService.PaymentProcessor
             _paymentQueueService = paymentQueueService;
             _logger = logger;
         }
-        public async Task HandlePyament(PaymentDto payment, CancellationToken cancellationToken)
+        public async Task HandlePayment(PaymentDto payment, CancellationToken cancellationToken)
         {
             _logger.Information("Creating payment: {Payment}", payment);
 
             payment.Status = PaymentStatus.Processing.ToString();
 
             await _paymentRepository.UpsertPaymentAsync(payment, cancellationToken);
-            await _eventHubSimulatorService.SendMessageAsync(payment, payment.id, cancellationToken);
+            await _eventHubSimulatorService.SendMessageAsync(
+               message: new PaymentEvent(payment.id,
+                                         payment.Timestamp,
+                                         payment.Status,
+                                         payment.CardNumber,
+                                         payment.ExpiryMonth,
+                                         payment.ExpiryYear,
+                                         payment.Currency,
+                                         payment.Amount),
+               payment.id, cancellationToken);
             await _paymentQueueService.SendPaymentAsync(payment, cancellationToken);
 
             _logger.Information("Payment Sucessfully created with PaymentId: {PaymentId} and Status: {Status}", payment.id, payment.Status);

@@ -35,7 +35,16 @@ namespace PaymentGateway.Api.Application.Commands
             };
 
             await _paymentQueueService.SendPaymentAsync(payment, cancellationToken);
-            await _eventHubSimulatorService.SendMessageAsync(payment, payment.id, cancellationToken);
+            await _eventHubSimulatorService.SendMessageAsync(
+               message: new PaymentEvent(payment.id,
+                                         payment.Timestamp,
+                                         payment.Status,
+                                         payment.CardNumber,
+                                         payment.ExpiryMonth,
+                                         payment.ExpiryYear,
+                                         payment.Currency,
+                                         payment.Amount),
+               payment.id, cancellationToken);
 
             _logger.Information("Payment Successfully Created And Will Be Processed: {PaymentRequest}", payment.id);
 
