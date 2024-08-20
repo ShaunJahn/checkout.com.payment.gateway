@@ -462,3 +462,6 @@ azurite_db_table_*
 *.log
 logs/
 seq-data/
+
+azurite/
+data/
